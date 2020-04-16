@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>TUM.Live Recording Script Generator</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <div class="py-5 text-center">
+            <img class="d-block mx-auto mb-4" src="https://upload.wikimedia.org/wikipedia/commons/c/c8/Logo_of_the_Technical_University_of_Munich.svg" alt="" width="200" height="200">
+            <h2 style="margin-top: -50px">TUM.Live Recording Script Generator</h2>
+            <p class="lead">Generate a script and cron job to automatically record TUM livestreams. Simply place the script on a machine with ffmpeg installed and add the cron line to the jobs using crontab -e.</p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4 order-md-2 mb-4">
+                <h4 class="d-flex justify-content-between align-items-center mb-3">
+        <span class="text-muted">Instructions</span>
+      </h4>
+                <ul style="color: gray; margin-left: -22px"><li>Copy and paste/download the script into the directory specified in the field script path on the machine.</li> <li>Make the script executabe using the command <i>chmod +x scipt.sh</i></li><li>Do not forget to create the output folder for the Video files as well.</li><li>inally add the cron line to cron using <i>crontab -e</i> in order to be executed every week.</li></ul>
+            </div>
+
+            <div class="col-md-8 order-md-1">
+                <h4 class="mb-3">General</h4>
+                <form onsubmit="test();return false">
+                    <div class="form-group">
+                        <label for="room">Room:</label>
+                        <select class="form-control" id="room" required>
+                            <option value="MW0001">MW 0001, Gustav-Niemann-Hörsaal</option>
+                            <option value="MW2001">MW 2001, Rudolf-Diesel-Hörsaal</option>
+                            <option value="HS1">MI HS 1, Friedrich L. Bauer Hörsaal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cam">Camera:</label>
+                        <br>
+                        <select class="form-control" id="cam" required>
+                            <option value="COMB">Combined (Pres + Cam)</option>
+                            <option value="PRES">Presentation</option>
+                            <option value="CA;">Camera</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm">
+                            <label for="duration">Stream duration:</label>
+                            <input class="form-control" type="time" id="duration" name="duration" required>
+                            <small id="durationHelp" class="form-text text-muted">How long does the Stream last for?</small>
+                        </div>
+                        <div class="col-sm">
+                            <label for="customRange2">Padding: <span class="badge badge-pill badge-primary" id="rageValue">2 min.</span></label>
+                            <input type="range" class="custom-range" min="0" max="5" value="2" id="padding" onchange="updateRangeValue()" style="display:inline;">
+
+                            <small id="durationHelp" class="form-text text-muted">Time to be added before and after the stream</small>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Stream Name:</label>
+                        <input class="form-control" type="text" id="name" name="name" value="" required>
+                        <small id="durationHelp" class="form-text text-muted">Give the Stream a friendly name (Filename)</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="path">Save to path:</label>
+                        <input class="form-control" type="text" id="path" name="path" value="./streams/" required>
+                    </div>
+                    <hr class="mb-4" style="margin-top: 30px">
+                    <h4 class="mb-3">Date and Time</h4>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="weekday">Weekday:</label>
+                            <select class="form-control" id="weekday" required>
+                                <option value="1">Monday</option>
+                                <option value="2">Tuesday</option>
+                                <option value="3">Wednesday</option>
+                                <option value="4">Thursday</option>
+                                <option value="5">Friday</option>
+                                <option value="6">Saturday</option>
+                                <option value="0">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="time">Time:</label>
+                            <input class="form-control" type="time" id="time" name="time" required>
+                        </div>
+                    </div>
+                    <small id="dateTimeHelp" class="form-text text-muted" style="margin-top: -5px">To record streams on multiple days of the week simply generate a script for each day.</small>
+                    <div class="form-group">
+                        <br>
+                        <label for="scriptPath">Script path:</label>
+                        <input class="form-control" type="text" id="scriptPath" name="scriptPath" value="/u/halle/username/home_at/script.sh" required>
+                        <small id="dateTimeHelp" class="form-text text-muted">Path where the script is gonna be located on the machine.</small>
+                    </div>
+                    <hr class="mb-4">
+                    <button class="btn btn-primary btn-lg btn-block" type="submit" value="Submit">Generate Script</button>
+                </form>
+            </div>
+        </div>
+
+        <br><br>
+
+        <div id="generated-script">
+        </div>
+        <script>
+            function updateRangeValue() {
+                document.getElementById("rageValue").innerHTML = document.getElementById("padding").value + " min.";
+            }
+            var script;
+
+            function adjustDuration(dur, pad) {
+                var durSplit = dur.split(":");
+                for (var i = 0; i < durSplit.length; i++) {
+                    durSplit[i] = parseInt(durSplit[i], 10);
+                }
+
+                durSplit[1] += pad * 2;
+                if (durSplit[1] > 60) {
+                    durSplit[0] += 1;
+                    durSplit[1] -= 60;
+                }
+
+                durSplit[0] = (durSplit[0] < 9 ? "0" : "") + durSplit[0];
+                durSplit[1] = (durSplit[1] < 9 ? "0" : "") + durSplit[1];
+                return durSplit;
+            }
+
+            function adjustStartTime(ti, pad) {
+                var tiSplit = ti.split(":");
+                for (var i = 0; i < tiSplit.length; i++) {
+                    tiSplit[i] = parseInt(tiSplit[i], 10);
+                }
+                tiSplit[1] -= pad;
+                if (tiSplit[1] < 0) {
+                    tiSplit[0] -= 1;
+                    tiSplit[1] = 60 + tiSplit[1];
+                }
+
+                return tiSplit;
+            }
+
+            function test() {
+                let room = document.getElementById("room").value;
+                let cam = document.getElementById("cam").value;
+                let duration = document.getElementById("duration").value;
+                let padding = document.getElementById("padding").value;
+                let name = document.getElementById("name").value;
+                let path = document.getElementById("path").value;
+
+                let weekday = document.getElementById("weekday").value;
+                let time = document.getElementById("time").value;
+                let scriptPath = document.getElementById("scriptPath").value;
+
+                var wget = "wget -qO- https://live.rbg.tum.de/cgi-bin/streams/" + room;
+                var grep = "grep -Eo \"(http|https)://[a-zA-Z0-9.:/?=_-]*" + cam + "[a-zA-Z0-9.:/?=_-]*.m3u8\""
+                var ffmpeg = "xargs -I{} ffmpeg -i {} -c copy -t " + adjustDuration(duration, padding)[0] + ":" + adjustDuration(duration, padding)[1] + ":00 " + path + name + "-`date +\"%Y-%m-%d\"`.mp4"
+
+                var cron = adjustStartTime(time, padding)[1] + " " + adjustStartTime(time, padding)[0] + " * * " + weekday + " " + scriptPath;
+
+                script = wget + " | " + grep + " | " + ffmpeg;
+                document.getElementById("generated-script").innerHTML = "<div class=\"card\"><div class=\"card-body\"><h3>Script</h3><div class=\"alert alert-secondary\" id=\"script\" role=\"alert\">" + script + "</div><button type=\"button\" class=\"btn btn-primary\" onclick=\"download()\">Download script</button><br><br><h3>Cron</h3><div class=\"alert alert-secondary\" id=\"script\" role=\"alert\">" + cron + "</div></div></div>";
+            }
+
+            function download() {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(script));
+                element.setAttribute('download', 'script.sh');
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+
+            }
+        </script>
+        <br>
+        <br>
+        <br>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script>
+        window.jQuery || document.write('<script src="/docs/4.4/assets/js/vendor/jquery.slim.min.js"><\/script>')
+    </script>
+    <script src="/docs/4.4/dist/js/bootstrap.bundle.min.js" integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm" crossorigin="anonymous"></script>
+    <script src="form-validation.js"></script>
+</body>
+
+</html>
